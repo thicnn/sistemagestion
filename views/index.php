@@ -13,7 +13,7 @@ require_once '../controllers/ClientController.php';
 $authController = new AuthController($connection);
 $clientController = new ClientController($connection);
 
-// --- INICIO DEL ENRUTADOR MEJORADO ---
+// --- INICIO DEL ENRUTADOR CORREGIDO ---
 
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
@@ -44,7 +44,7 @@ if ($url === 'login') {
     } else {
         $clientController->showCreateForm();
     }
-
+// Esta es la parte clave que faltaba en tu archivo
 } elseif (preg_match('#^clients/edit/(\d+)$#', $url, $matches)) {
     $id = (int)$matches[1]; // Capturamos el ID desde la URL
     if ($method === 'POST') {

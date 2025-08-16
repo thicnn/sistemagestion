@@ -91,24 +91,27 @@ class ClientController
     /**
      * Procesa la actualización de un cliente.
      */
+    /**
+     * Procesa la actualización de un cliente.
+     */
     public function update($id)
     {
         if (!isset($_SESSION['user_id'])) {
             header('Location: /sistemagestion/login');
             exit();
         }
+        
+        // Ya no se necesita la comprobación del método POST aquí.
+        $this->clientModel->update(
+            $id,
+            $_POST['nombre'],
+            $_POST['telefono'],
+            $_POST['email'],
+            $_POST['notas']
+        );
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->clientModel->update(
-                $id,
-                $_POST['nombre'],
-                $_POST['telefono'],
-                $_POST['email'],
-                $_POST['notas']
-            );
-
-            header('Location: /sistemagestion/clients');
-            exit();
-        }
+        header('Location: /sistemagestion/clients');
+        exit();
     }
-}
+    }
+

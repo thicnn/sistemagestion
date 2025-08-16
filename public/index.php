@@ -13,50 +13,59 @@ require_once '../controllers/ClientController.php';
 $authController = new AuthController($connection);
 $clientController = new ClientController($connection);
 
-// --- Lógica del Enrutador ---
+// --- INICIO DEL ENRUTADOR CON SWITCH ---
 
-// Obtener la URL solicitada. Si está vacía, decidir si mostrar el dashboard o el login.
 $url = $_GET['url'] ?? '';
-if ($url === '') {
-    $url = isset($_SESSION['user_id']) ? 'dashboard' : 'login';
-}
-
-// Obtener el método de la petición (GET, POST, etc.)
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Estructura de control para dirigir a la acción correcta
-switch ($url) {
-    case 'login':
-        if ($method === 'POST') {
-            $authController->handleLogin();
-        } else {
-            $authController->showLoginForm();
-        }
-        break;
+// Primero, verificamos si la URL coincide con un patrón dinámico (como el de edición)
+if (preg_match('#^clients/edit/(\d+)$#', $url, $matches)) {
+    $id = (int)$matches[1]; // Capturamos el ID
+    if ($method === 'POST') {
+        $clientController->update($id);
+    } else {
+        $clientController->showEditForm($id);
+    }
+} else {
+    // Si no es una ruta dinámica, usamos el switch para las rutas estáticas
+    switch ($url) {
+        case 'login':
+            if ($method === 'POST') {
+                $authController->handleLogin();
+            } else {
+                $authController->showLoginForm();
+            }
+            break;
 
-    case 'logout':
-        $authController->logout();
-        break;
+        case 'logout':
+            $authController->logout();
+            break;
 
-    case 'dashboard':
-        $authController->showDashboard();
-        break;
+        case 'dashboard':
+        case '': // Ruta principal o vacía
+            if (isset($_SESSION['user_id'])) {
+                $authController->showDashboard();
+            } else {
+                $authController->showLoginForm();
+            }
+            break;
 
-    case 'clients':
-        $clientController->index();
-        break;
+        case 'clients':
+            $clientController->index();
+            break;
 
-    case 'clients/create':
-        if ($method === 'POST') {
-            $clientController->store();
-        } else {
-            $clientController->showCreateForm();
-        }
-        break;
+        case 'clients/create':
+            if ($method === 'POST') {
+                $clientController->store();
+            } else {
+                $clientController->showCreateForm();
+            }
+            break;
 
-    default:
-        // Si no se encuentra la ruta, mostrar un error 404
-        header("HTTP/1.0 404 Not Found");
-        echo "<h1>Error 404: Página no encontrada</h1>";
-        exit();
+        default:
+            // Si ninguna ruta coincide, mostramos un error 404
+            header("HTTP/1.0 404 Not Found");
+            echo "<h1>Error 404: Página no encontrada</h1>";
+            exit();
+    }
 }
