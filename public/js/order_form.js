@@ -1,19 +1,18 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // ... (todo el código de selección de elementos se mantiene igual) ...
     const orderForm = document.getElementById('order-form');
     const addItemBtn = document.getElementById('add-item-btn');
     const itemsContainer = document.getElementById('items-container');
     const template = document.getElementById('item-template');
     const totalPedidoSpan = document.getElementById('total-pedido');
     const submitButton = document.getElementById('submit-button');
-
-    // --- ¡INICIO DE LA NUEVA LÓGICA DE BÚSQUEDA DE CLIENTE! ---
     const clientSearchInput = document.getElementById('cliente_search');
     const clientHiddenInput = document.getElementById('cliente_id'); // Este es el input que usará la validación
     const searchResultsDiv = document.getElementById('search-results');
 
-    clientSearchInput.addEventListener('keyup', async function() {
+    clientSearchInput.addEventListener('keyup', async function () {
         const searchTerm = clientSearchInput.value;
-        searchResultsDiv.innerHTML = ''; 
+        searchResultsDiv.innerHTML = '';
 
         if (searchTerm.length < 2) {
             clientHiddenInput.value = ''; // Limpiamos el ID si se borra la búsqueda
@@ -34,16 +33,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    searchResultsDiv.addEventListener('click', function(e) {
+    searchResultsDiv.addEventListener('click', function (e) {
         if (e.target.classList.contains('result-item')) {
             const selectedId = e.target.dataset.clientId;
             const selectedName = e.target.dataset.clientName;
 
             clientHiddenInput.value = selectedId;
             clientSearchInput.value = selectedName;
-            
+
             searchResultsDiv.innerHTML = '';
-            validateForm(); 
+            validateForm();
         }
     });
     // --- FIN DE LA LÓGICA DE BÚSQUEDA ---
@@ -87,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const updateItemState = (itemForm) => {
         const selects = {
-            tipo: itemForm.querySelector('.tipo'),
+            tipo: itemForm.querySelector('.tipo'), // ¡AHORA COINCIDE CON EL HTML!
             cat: itemForm.querySelector('.categoria'),
             desc: itemForm.querySelector('.descripcion'),
             qty: itemForm.querySelector('.cantidad'),
@@ -128,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addItemBtn.addEventListener('click', () => {
         const newItem = template.content.cloneNode(true);
-        const tipoSelect = newItem.querySelector('.tipo');
+        const tipoSelect = newItem.querySelector('.tipo'); // ¡AHORA COINCIDE CON EL HTML!
         populateSelect(tipoSelect, [...new Set(productsData.map(p => p.tipo))]);
         itemsContainer.appendChild(newItem);
         validateForm();
