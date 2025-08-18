@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const updateItemState = (itemForm) => {
         const selects = {
-            tipo: itemForm.querySelector('.tipo_servicio'),
+            tipo: itemForm.querySelector('.tipo'),
             cat: itemForm.querySelector('.categoria'),
             desc: itemForm.querySelector('.descripcion'),
             qty: itemForm.querySelector('.cantidad'),
@@ -99,12 +99,12 @@ document.addEventListener('DOMContentLoaded', function() {
             desc: selects.desc.value
         };
         if (values.tipo) {
-            const cats = [...new Set(productsData.filter(p => p.tipo_servicio === values.tipo).map(p => p.categoria))];
+            const cats = [...new Set(productsData.filter(p => p.tipo === values.tipo).map(p => p.categoria))];
             populateSelect(selects.cat, cats, values.cat);
             selects.cat.disabled = false;
         }
         if (values.tipo && values.cat) {
-            const descs = productsData.filter(p => p.tipo_servicio === values.tipo && p.categoria === values.cat).map(p => p.descripcion);
+            const descs = productsData.filter(p => p.tipo === values.tipo && p.categoria === values.cat).map(p => p.descripcion);
             populateSelect(selects.desc, descs, values.desc);
             selects.desc.disabled = false;
         }
@@ -128,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addItemBtn.addEventListener('click', () => {
         const newItem = template.content.cloneNode(true);
-        const tipoSelect = newItem.querySelector('.tipo_servicio');
-        populateSelect(tipoSelect, [...new Set(productsData.map(p => p.tipo_servicio))]);
+        const tipoSelect = newItem.querySelector('.tipo');
+        populateSelect(tipoSelect, [...new Set(productsData.map(p => p.tipo))]);
         itemsContainer.appendChild(newItem);
         validateForm();
     });
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     itemsContainer.addEventListener('input', e => {
         if (e.target.classList.contains('item-selector')) {
             const itemForm = e.target.closest('.item-form');
-            if (e.target.classList.contains('tipo_servicio')) {
+            if (e.target.classList.contains('tipo')) {
                 itemForm.querySelector('.categoria').value = '';
                 itemForm.querySelector('.descripcion').value = '';
             }

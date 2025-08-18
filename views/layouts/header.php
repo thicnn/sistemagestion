@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión | Centro de Impresión</title>
-
+    
     <style>
         /* --- Estilos Generales --- */
         body { 
@@ -39,7 +39,7 @@
         nav a:hover { color: #0056b3; }
         nav a.logout { color: #dc3545; }
         nav a.logout:hover { color: #b02a37; }
-
+        
         /* --- Área de Contenido Principal --- */
         .content-area { 
             background-color: #fff; 
@@ -51,7 +51,7 @@
         /* --- Formularios --- */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
-        input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], textarea, select { 
+        input[type="text"], input[type="email"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], textarea, select { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #ccc; 
@@ -81,7 +81,7 @@
         }
         .button:hover, button[type="submit"]:hover { background-color: #0056b3; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-
+        
         /* --- Tablas --- */
         .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
@@ -92,7 +92,7 @@
 
 <div class="main-container">
 
-    <?php // --- LÓGICA CORREGIDA ---
+    <?php 
     // Solo mostramos el header con la navegación SI el usuario ha iniciado sesión.
     if (isset($_SESSION['user_id'])): ?>
     <header>
@@ -101,9 +101,14 @@
             <a href="/sistemagestion/dashboard">Dashboard</a>
             <a href="/sistemagestion/clients">Clientes</a>
             <a href="/sistemagestion/orders">Pedidos</a>
-            <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'administrador'): ?>
+            
+            <?php // --- LÓGICA DE ROLES PARA ENLACES DE ADMIN ---
+            if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'administrador'): ?>
                 <a href="/sistemagestion/reports">Reportes</a>
+                <a href="/sistemagestion/admin/products">Productos</a>
+                <a href="/sistemagestion/admin/settings">Ajustes</a>
             <?php endif; ?>
+            
             <a href="/sistemagestion/logout" class="logout">Cerrar Sesión</a>
         </nav>
     </header>

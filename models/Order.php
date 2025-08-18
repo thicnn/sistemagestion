@@ -1,18 +1,15 @@
 <?php
 
-class Order
-{
+class Order {
     private $connection;
     private $table_name = "pedidos";
     private $items_table_name = "items_pedido";
 
-    public function __construct($db_connection)
-    {
+    public function __construct($db_connection) {
         $this->connection = $db_connection;
     }
 
-    public function findAll()
-    {
+    public function findAll() {
         $query = "SELECT p.id, p.estado, p.costo_total, p.fecha_creacion, c.nombre as nombre_cliente 
                   FROM " . $this->table_name . " p
                   LEFT JOIN clientes c ON p.cliente_id = c.id
@@ -21,8 +18,7 @@ class Order
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function findByStatuses($statuses)
-    {
+    public function findByStatuses($statuses) {
         $placeholders = implode(',', array_fill(0, count($statuses), '?'));
         $query = "SELECT p.id, p.estado, p.costo_total, c.nombre as nombre_cliente 
                   FROM " . $this->table_name . " p
@@ -36,8 +32,7 @@ class Order
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function findByIdWithDetails($id)
-    {
+    public function findByIdWithDetails($id) {
         $query_pedido = "SELECT p.*, c.nombre as nombre_cliente FROM " . $this->table_name . " p LEFT JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ?";
         $stmt_pedido = $this->connection->prepare($query_pedido);
         $stmt_pedido->bind_param("i", $id);
@@ -60,32 +55,28 @@ class Order
 
         return $pedido;
     }
-
-    public function addPayment($pedido_id, $monto, $metodo_pago)
-    {
+    
+    public function addPayment($pedido_id, $monto, $metodo_pago) {
         $query = "INSERT INTO pagos (pedido_id, monto, metodo_pago) VALUES (?, ?, ?)";
         $stmt = $this->connection->prepare($query);
         $stmt->bind_param("ids", $pedido_id, $monto, $metodo_pago);
         return $stmt->execute();
     }
 
-    public function update($id, $estado, $notas)
-    {
+    public function update($id, $estado, $notas) {
         $query = "UPDATE " . $this->table_name . " SET estado = ?, notas_internas = ? WHERE id = ?";
         $stmt = $this->connection->prepare($query);
         $stmt->bind_param("ssi", $estado, $notas, $id);
         return $stmt->execute();
     }
 
-    public function create($cliente_id, $usuario_id, $estado, $notas, $items)
-    {
+    public function create($cliente_id, $usuario_id, $estado, $notas, $items) {
         $this->connection->begin_transaction();
         try {
-            // 1. Recalcula el precio total en el servidor por seguridad
             $costo_total_seguro = 0;
             $query_producto = "SELECT precio FROM productos WHERE descripcion = ? LIMIT 1";
             $stmt_producto = $this->connection->prepare($query_producto);
-
+    
             foreach ($items['descripcion'] as $index => $descripcion) {
                 $cantidad = (int)$items['cantidad'][$index];
                 if (!empty($descripcion) && $cantidad > 0) {
@@ -97,17 +88,15 @@ class Order
                     }
                 }
             }
-
-            // 2. Inserta el pedido principal con la nueva columna 'notas_internas'
+    
             $query_pedido = "INSERT INTO " . $this->table_name . " (cliente_id, usuario_id, estado, notas_internas, costo_total) VALUES (?, ?, ?, ?, ?)";
             $stmt_pedido = $this->connection->prepare($query_pedido);
             $stmt_pedido->bind_param("iisid", $cliente_id, $usuario_id, $estado, $notas, $costo_total_seguro);
             $stmt_pedido->execute();
-
+    
             $pedido_id = $this->connection->insert_id;
-
-            // 3. Inserta cada ítem del pedido con las nuevas columnas
-            $query_item = "INSERT INTO " . $this->items_table_name . " (pedido_id, tipo_item, categoria, descripcion, cantidad, subtotal, doble_faz) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    
+            $query_item = "INSERT INTO " . $this->items_table_name . " (pedido_id, tipo, categoria, descripcion, cantidad, subtotal, doble_faz) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_item = $this->connection->prepare($query_item);
 
             foreach ($items['descripcion'] as $index => $descripcion) {
@@ -117,49 +106,35 @@ class Order
                     $stmt_producto->execute();
                     $resultado = $stmt_producto->get_result()->fetch_assoc();
                     $subtotal_item = $resultado['precio'] * $cantidad;
-
-                    $tipo_servicio = $items['tipo_servicio'][$index];
+                    
+                    $tipo_servicio = $items['tipo'][$index];
                     $categoria = $items['categoria'][$index];
-                    // El valor de un checkbox se envía solo si está marcado.
                     $doble_faz = isset($items['doble_faz'][$index]) ? 1 : 0;
 
                     $stmt_item->bind_param("isssidi", $pedido_id, $tipo_servicio, $categoria, $descripcion, $cantidad, $subtotal_item, $doble_faz);
                     $stmt_item->execute();
                 }
             }
-
+            
             $this->connection->commit();
             return true;
+
         } catch (Exception $e) {
             $this->connection->rollback();
-            // Esto es útil para que veas el error real en los logs de PHP/Apache
-            error_log($e->getMessage());
+            error_log($e->getMessage()); 
             return false;
         }
     }
-    /**
-     * ¡NUEVO! Calcula las ventas totales en un rango de fechas.
-     * @param string $fechaInicio
-     * @param string $fechaFin
-     * @return array Un array con el total y la cantidad de pedidos.
-     */
-    public function getSalesReport($fechaInicio, $fechaFin)
-    {
-        // Nos aseguramos de que la fecha final incluya todo el día.
+
+    public function getSalesReport($fechaInicio, $fechaFin) {
         $fechaFinCompleta = $fechaFin . ' 23:59:59';
-
-        $query = "SELECT 
-                SUM(costo_total) as total_ventas, 
-                COUNT(id) as cantidad_pedidos 
-              FROM " . $this->table_name . " 
-              WHERE fecha_creacion BETWEEN ? AND ? 
-              AND estado NOT IN ('Cancelado', 'Cotización')"; // Excluimos los no confirmados
-
+        $query = "SELECT SUM(costo_total) as total_ventas, COUNT(id) as cantidad_pedidos 
+                  FROM " . $this->table_name . " 
+                  WHERE fecha_creacion BETWEEN ? AND ? AND estado NOT IN ('Cancelado', 'Cotización')";
         $stmt = $this->connection->prepare($query);
         $stmt->bind_param("ss", $fechaInicio, $fechaFinCompleta);
         $stmt->execute();
         $result = $stmt->get_result();
-
         return $result ? $result->fetch_assoc() : ['total_ventas' => 0, 'cantidad_pedidos' => 0];
     }
 }
