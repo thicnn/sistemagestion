@@ -3,7 +3,7 @@
 <form action="/sistemagestion/orders/edit/<?php echo $order['id']; ?>" method="POST">
     <div class="form-group">
         <label>Cliente:</label>
-        <input type="text" value="<?php echo htmlspecialchars($order['nombre_cliente']); ?>" disabled>
+        <input type="text" value="<?php echo htmlspecialchars($order['nombre_cliente'] ?? 'N/A'); ?>" disabled>
     </div>
     <div class="form-group">
         <label for="estado">Cambiar Estado:</label>
@@ -19,7 +19,7 @@
     </div>
     <div class="form-group">
         <label for="notas">Notas del Pedido:</label>
-        <textarea name="notas" id="notas" rows="3" <?php echo $order['estado'] === 'Cancelado' ? 'disabled' : ''; ?>><?php echo htmlspecialchars($order['notas_internas']); ?></textarea>
+        <textarea name="notas" id="notas" rows="3" <?php echo $order['estado'] === 'Cancelado' ? 'disabled' : ''; ?>><?php echo htmlspecialchars($order['notas_internas'] ?? ''); ?></textarea>
     </div>
 
     <hr>
@@ -39,21 +39,22 @@
 </form>
 
 <script>
-    // Script para mostrar/ocultar el motivo de cancelación
     const cancelarCheckbox = document.getElementById('cancelar-checkbox');
-    const motivoContainer = document.getElementById('motivo-container');
-    const motivoTextarea = document.getElementById('motivo_cancelacion');
-    const estadoSelect = document.getElementById('estado');
+    if (cancelarCheckbox) {
+        const motivoContainer = document.getElementById('motivo-container');
+        const motivoTextarea = document.getElementById('motivo_cancelacion');
+        const estadoSelect = document.getElementById('estado');
 
-    cancelarCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            motivoContainer.style.display = 'block';
-            motivoTextarea.required = true;
-            estadoSelect.disabled = true;
-        } else {
-            motivoContainer.style.display = 'none';
-            motivoTextarea.required = false;
-            estadoSelect.disabled = false;
-        }
-    });
+        cancelarCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                motivoContainer.style.display = 'block';
+                motivoTextarea.required = true;
+                estadoSelect.disabled = true;
+            } else {
+                motivoContainer.style.display = 'none';
+                motivoTextarea.required = false;
+                estadoSelect.disabled = false;
+            }
+        });
+    }
 </script>

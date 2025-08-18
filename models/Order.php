@@ -85,6 +85,7 @@ class Order
     {
         $this->connection->begin_transaction();
         try {
+            // 1. Recalcular el precio total en el servidor por seguridad
             $costo_total_seguro = 0;
             $query_producto = "SELECT precio FROM productos WHERE descripcion = ? LIMIT 1";
             $stmt_producto = $this->connection->prepare($query_producto);
@@ -101,6 +102,7 @@ class Order
                 }
             }
 
+            // 2. Insertar el pedido principal
             $query_pedido = "INSERT INTO " . $this->table_name . " (cliente_id, usuario_id, estado, notas_internas, costo_total) VALUES (?, ?, ?, ?, ?)";
             $stmt_pedido = $this->connection->prepare($query_pedido);
             $stmt_pedido->bind_param("iisid", $cliente_id, $usuario_id, $estado, $notas, $costo_total_seguro);
@@ -108,6 +110,7 @@ class Order
 
             $pedido_id = $this->connection->insert_id;
 
+            // 3. Insertar cada ítem del pedido con los nombres de columna correctos
             $query_item = "INSERT INTO " . $this->items_table_name . " (pedido_id, tipo, categoria, descripcion, cantidad, subtotal, doble_faz) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt_item = $this->connection->prepare($query_item);
 
@@ -119,7 +122,7 @@ class Order
                     $resultado = $stmt_producto->get_result()->fetch_assoc();
                     $subtotal_item = $resultado['precio'] * $cantidad;
 
-                    $tipo_item = $items['tipo'][$index]; // ¡Asegúrate de que aquí diga 'tipo'!
+                    $tipo_item = $items['tipo'][$index]; // ¡Nombre de variable corregido!
                     $categoria = $items['categoria'][$index];
                     $doble_faz = isset($items['doble_faz'][$index]) ? 1 : 0;
 
@@ -132,11 +135,10 @@ class Order
             return true;
         } catch (Exception $e) {
             $this->connection->rollback();
-            error_log($e->getMessage());
+            error_log("Error al crear pedido: " . $e->getMessage());
             return false;
         }
     }
-
     public function getSalesReport($fechaInicio, $fechaFin)
     {
         $fechaFinCompleta = $fechaFin . ' 23:59:59';
