@@ -151,12 +151,16 @@ class Order
         $result = $stmt->get_result();
         return $result ? $result->fetch_assoc() : ['total_ventas' => 0, 'cantidad_pedidos' => 0];
     }
+    
+    public function findByStatus($status) {
+        $query = "SELECT p.*, c.nombre as nombre_cliente FROM pedidos p LEFT JOIN clientes c ON p.cliente_id = c.id WHERE p.estado = ? ORDER BY p.fecha_creacion DESC";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bind_param("s", $status);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
     public function getMonthlySalesComparison() {
-        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') as mes, COUNT(id) as total_pedidos, SUM(costo_total) as total_ventas 
-                  FROM pedidos 
-                  WHERE estado NOT IN ('Cancelado', 'Cotización') 
-                  GROUP BY mes ORDER BY mes DESC LIMIT 2"; // Compara los últimos 2 meses
-        $result = $this->connection->query($query);
-        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') as mes, COUNT(id) as total_pedidos FROM pedidos WHERE estado NOT IN ('Cancelado', 'Cotización') GROUP BY mes ORDER BY mes DESC LIMIT 2";
+        return $this->connection->query($query)->fetch_all(MYSQLI_ASSOC);
     }
 }

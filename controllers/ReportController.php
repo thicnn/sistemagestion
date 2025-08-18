@@ -1,53 +1,70 @@
 <?php
 require_once '../models/Order.php';
-require_once '../models/Report.php'; // Incluimos el nuevo modelo
+require_once '../models/Report.php';
 
 class ReportController {
     private $orderModel;
-    private $reportModel; // Añadimos el nuevo modelo
+    private $reportModel;
 
     public function __construct($db_connection) {
         $this->orderModel = new Order($db_connection);
-        $this->reportModel = new Report($db_connection); // Lo instanciamos
+        $this->reportModel = new Report($db_connection);
     }
 
     public function index() {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') { header('Location: /sistemagestion/dashboard'); exit(); }
 
-        // Recoger datos para el dashboard de reportes
         $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-d');
-
+        
+        // --- TODAS LAS LLAMADAS CORREGIDAS CON '->' ---
         $salesData = $this->orderModel->getSalesReport($fechaInicio, $fechaFin);
         $statusCounts = $this->reportModel->countOrdersByStatus();
         $monthlyComparison = $this->orderModel->getMonthlySalesComparison();
         $providerPayments = $this->reportModel->getProviderPayments();
+        $latestCounters = $this->reportModel->getLatestCounters();
 
-        // Producción de la C454e (maquina_id = 2)
-        $c454e_bn = $this->reportModel->getProductionCount(2, 'Impresion', 'Blanco y Negro') + $this->reportModel->getProductionCount(2, 'Fotocopia', 'Blanco y Negro');
-        $c454e_color = $this->reportModel->getProductionCount(2, 'Impresion', 'Color') + $this->reportModel->getProductionCount(2, 'Fotocopia', 'Color');
+        $primerDiaMes = date('Y-m-01');
+        $hoy = date('Y-m-d');
 
-        // Producción de la Bh-227 (maquina_id = 1)
-        $bh227_total = $this->reportModel->getProductionCount(1, 'Impresion', 'Blanco y Negro') + $this->reportModel->getProductionCount(1, 'Fotocopia', 'Blanco y Negro');
-
+        $c454e_bn_prod = $this->reportModel->getProductionCountForPeriod(2, 'Impresion', 'blanco y negro', $primerDiaMes, $hoy) + $this->reportModel->getProductionCountForPeriod(2, 'Fotocopia', 'blanco y negro', $primerDiaMes, $hoy);
+        $c454e_color_prod = $this->reportModel->getProductionCountForPeriod(2, 'Impresion', 'color', $primerDiaMes, $hoy) + $this->reportModel->getProductionCountForPeriod(2, 'Fotocopia', 'color', $primerDiaMes, $hoy);
+        $bh227_total_prod = $this->reportModel->getProductionCountForPeriod(1, 'Impresion', 'blanco y negro', $primerDiaMes, $hoy) + $this->reportModel->getProductionCountForPeriod(1, 'Fotocopia', 'blanco y negro', $primerDiaMes, $hoy);
+        
         require_once '../views/layouts/header.php';
         require_once '../views/pages/reports/index.php';
         require_once '../views/layouts/footer.php';
     }
 
+    public function showStatusDetails($status) {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') { header('Location: /sistemagestion/dashboard'); exit(); }
+        $orders = $this->orderModel->findByStatus($status);
+        require_once '../views/layouts/header.php';
+        require_once '../views/pages/reports/status_details.php';
+        require_once '../views/layouts/footer.php';
+    }
+
     public function storeCounter() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') { exit('Acceso denegado'); }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->reportModel->saveCounter($_POST['maquina'], $_POST['periodo'], $_POST['fecha'], $_POST['contador_bn'], $_POST['contador_color'], $_POST['notas']);
+            $this->reportModel->saveCounter($_POST['maquina'], $_POST['fecha_inicio'], $_POST['fecha_fin'], $_POST['contador_bn'], $_POST['contador_color'] ?? 0, $_POST['notas'] ?? '');
         }
-        header('Location: /sistemagestion/reports');
-        exit();
+        header('Location: /sistemagestion/reports'); exit();
     }
 
     public function storeProviderPayment() {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') { exit('Acceso denegado'); }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->reportModel->saveProviderPayment($_POST['fecha_pago'], $_POST['descripcion'], $_POST['monto']);
+        }
+        header('Location: /sistemagestion/reports'); exit();
+    }
+    
+    public function deleteProviderPayment($id) {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'administrador') {
+            header('Location: /sistemagestion/dashboard');
+            exit();
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->reportModel->deleteProviderPayment($id);
         }
         header('Location: /sistemagestion/reports');
         exit();
