@@ -151,4 +151,12 @@ class Order
         $result = $stmt->get_result();
         return $result ? $result->fetch_assoc() : ['total_ventas' => 0, 'cantidad_pedidos' => 0];
     }
+    public function getMonthlySalesComparison() {
+        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') as mes, COUNT(id) as total_pedidos, SUM(costo_total) as total_ventas 
+                  FROM pedidos 
+                  WHERE estado NOT IN ('Cancelado', 'Cotización') 
+                  GROUP BY mes ORDER BY mes DESC LIMIT 2"; // Compara los últimos 2 meses
+        $result = $this->connection->query($query);
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
 }

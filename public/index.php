@@ -38,8 +38,7 @@ if (preg_match('#^clients/edit/(\d+)$#', $url, $matches)) {
     if ($method === 'POST') {
         $adminController->deleteProduct((int)$matches[1]);
     }
-}
-else {
+} else {
     // Si no, usamos el switch para las rutas estáticas
     switch ($url) {
         case 'login':
@@ -72,6 +71,12 @@ else {
 
         case 'reports':
             $reportController->index();
+            break;
+        case 'reports/store_counter':
+            if ($method === 'POST') $reportController->storeCounter();
+            break;
+        case 'reports/store_payment':
+            if ($method === 'POST') $reportController->storeProviderPayment();
             break;
 
         case 'admin/settings':

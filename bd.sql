@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-08-2025 a las 06:19:47
+-- Tiempo de generación: 18-08-2025 a las 07:09:01
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -42,7 +42,24 @@ CREATE TABLE `clientes` (
 
 INSERT INTO `clientes` (`id`, `nombre`, `telefono`, `email`, `notas`, `fecha_creacion`) VALUES
 (2, 'thiago', '123132', 'thicun0333@gmail.com', 'dada', '2025-08-18 03:08:55'),
-(3, 'thiago', '123123123', 'thicun0433@gmail.com', 'thiaguito\r\n', '2025-08-18 03:37:11');
+(3, 'thiago', '123123123', 'thicun0433@gmail.com', 'thiaguito\r\n', '2025-08-18 03:37:11'),
+(4, 'idogod', '555555', 'nadie@gmail.com', 'adadd', '2025-08-18 04:33:02');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `impresora_contadores`
+--
+
+CREATE TABLE `impresora_contadores` (
+  `id` int(11) NOT NULL,
+  `maquina_nombre` varchar(100) NOT NULL,
+  `periodo` varchar(50) NOT NULL,
+  `fecha_registro` date NOT NULL,
+  `contador_bn` int(11) DEFAULT NULL,
+  `contador_color` int(11) DEFAULT NULL,
+  `notas` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -53,7 +70,7 @@ INSERT INTO `clientes` (`id`, `nombre`, `telefono`, `email`, `notas`, `fecha_cre
 CREATE TABLE `items_pedido` (
   `id` int(11) NOT NULL,
   `pedido_id` int(11) NOT NULL,
-  `tipo_item` varchar(50) NOT NULL,
+  `tipo` varchar(50) NOT NULL,
   `categoria` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
   `cantidad` int(11) NOT NULL,
@@ -65,7 +82,7 @@ CREATE TABLE `items_pedido` (
 -- Volcado de datos para la tabla `items_pedido`
 --
 
-INSERT INTO `items_pedido` (`id`, `pedido_id`, `tipo_item`, `categoria`, `descripcion`, `cantidad`, `subtotal`, `doble_faz`) VALUES
+INSERT INTO `items_pedido` (`id`, `pedido_id`, `tipo`, `categoria`, `descripcion`, `cantidad`, `subtotal`, `doble_faz`) VALUES
 (1, 4, '', NULL, NULL, 1, 0.00, 0),
 (2, 5, '', NULL, NULL, 12, 0.00, 0),
 (3, 6, 'impresion', 'blanco y negro', 'B&N-A4-Imagen', 1, 10.00, 0),
@@ -74,7 +91,9 @@ INSERT INTO `items_pedido` (`id`, `pedido_id`, `tipo_item`, `categoria`, `descri
 (6, 9, 'impresion', 'blanco y negro', 'B&N-A4-Imagen', 12, 120.00, 1),
 (7, 9, 'fotocopia', 'color', 'Color-Oficio', 12, 204.00, 0),
 (8, 9, 'impresion', 'color', 'Color-Papel 90Grms-Texto', 12, 204.00, 0),
-(9, 10, 'impresion', 'color', 'Color-A4-Imagen', 12, 240.00, 1);
+(9, 10, 'impresion', 'color', 'Color-A4-Imagen', 12, 240.00, 1),
+(10, 15, 'fotocopia', 'blanco y negro', 'B&N-Papel Duro', 112, 2464.00, 1),
+(11, 16, 'fotocopia', 'blanco y negro', 'B&N-A3', 112, 1680.00, 0);
 
 -- --------------------------------------------------------
 
@@ -123,7 +142,9 @@ CREATE TABLE `pagos` (
 --
 
 INSERT INTO `pagos` (`id`, `pedido_id`, `monto`, `metodo_pago`, `fecha_pago`) VALUES
-(1, 10, 123.00, 'Efectivo', '2025-08-18 04:14:29');
+(1, 10, 123.00, 'Efectivo', '2025-08-18 04:14:29'),
+(2, 8, 240.00, 'Efectivo', '2025-08-18 04:34:55'),
+(3, 15, 123.00, 'Efectivo', '2025-08-18 04:52:56');
 
 -- --------------------------------------------------------
 
@@ -137,6 +158,7 @@ CREATE TABLE `pedidos` (
   `usuario_id` int(11) DEFAULT NULL,
   `estado` varchar(50) NOT NULL,
   `notas_internas` text DEFAULT NULL,
+  `motivo_cancelacion` text DEFAULT NULL,
   `costo_total` decimal(10,2) NOT NULL,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `ultima_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -146,17 +168,19 @@ CREATE TABLE `pedidos` (
 -- Volcado de datos para la tabla `pedidos`
 --
 
-INSERT INTO `pedidos` (`id`, `cliente_id`, `usuario_id`, `estado`, `notas_internas`, `costo_total`, `fecha_creacion`, `ultima_actualizacion`) VALUES
-(1, NULL, 1, 'Solicitud', NULL, 0.00, '2025-08-18 02:22:22', '2025-08-18 02:22:22'),
-(2, NULL, 1, 'Solicitud', NULL, 0.00, '2025-08-18 02:36:14', '2025-08-18 02:36:14'),
-(3, NULL, 1, 'Solicitud', NULL, 0.00, '2025-08-18 02:36:22', '2025-08-18 02:36:22'),
-(4, NULL, 1, 'Solicitud', NULL, 0.00, '2025-08-18 02:38:20', '2025-08-18 02:38:20'),
-(5, NULL, 1, 'Solicitud', NULL, 0.00, '2025-08-18 02:38:32', '2025-08-18 02:38:32'),
-(6, NULL, 1, 'Cotización', '0', 10.00, '2025-08-18 02:51:09', '2025-08-18 02:51:09'),
-(7, NULL, 1, 'Cotización', '0', 462.00, '2025-08-18 02:51:22', '2025-08-18 02:51:22'),
-(8, NULL, 1, 'Cotización', '0', 240.00, '2025-08-18 02:58:37', '2025-08-18 02:58:37'),
-(9, NULL, 1, 'Listo para Retirar', 'nashe', 528.00, '2025-08-18 02:59:12', '2025-08-18 03:11:58'),
-(10, 2, 1, 'Solicitud', '0', 240.00, '2025-08-18 03:24:08', '2025-08-18 03:24:08');
+INSERT INTO `pedidos` (`id`, `cliente_id`, `usuario_id`, `estado`, `notas_internas`, `motivo_cancelacion`, `costo_total`, `fecha_creacion`, `ultima_actualizacion`) VALUES
+(1, NULL, 1, 'Solicitud', NULL, NULL, 0.00, '2025-08-18 02:22:22', '2025-08-18 02:22:22'),
+(2, NULL, 1, 'Solicitud', NULL, NULL, 0.00, '2025-08-18 02:36:14', '2025-08-18 02:36:14'),
+(3, NULL, 1, 'Solicitud', NULL, NULL, 0.00, '2025-08-18 02:36:22', '2025-08-18 02:36:22'),
+(4, NULL, 1, 'Solicitud', NULL, NULL, 0.00, '2025-08-18 02:38:20', '2025-08-18 02:38:20'),
+(5, NULL, 1, 'Solicitud', NULL, NULL, 0.00, '2025-08-18 02:38:32', '2025-08-18 02:38:32'),
+(6, NULL, 1, 'Cotización', '0', NULL, 10.00, '2025-08-18 02:51:09', '2025-08-18 02:51:09'),
+(7, NULL, 1, 'Cotización', '0', NULL, 462.00, '2025-08-18 02:51:22', '2025-08-18 02:51:22'),
+(8, NULL, 1, 'Cotización', '0', NULL, 240.00, '2025-08-18 02:58:37', '2025-08-18 02:58:37'),
+(9, NULL, 1, 'Listo para Retirar', 'nashe', NULL, 528.00, '2025-08-18 02:59:12', '2025-08-18 03:11:58'),
+(10, 2, 1, 'Cancelado', NULL, 'Nashe', 240.00, '2025-08-18 03:24:08', '2025-08-18 04:26:53'),
+(15, 4, 1, 'Cancelado', '0', 'porquesi\r\n', 2464.00, '2025-08-18 04:52:07', '2025-08-18 04:52:29'),
+(16, 4, 1, 'Cotización', '0', NULL, 1680.00, '2025-08-18 04:58:52', '2025-08-18 04:58:52');
 
 -- --------------------------------------------------------
 
@@ -249,6 +273,19 @@ INSERT INTO `productos` (`id`, `maquina_id`, `tipo`, `categoria`, `descripcion`,
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `proveedor_pagos`
+--
+
+CREATE TABLE `proveedor_pagos` (
+  `id` int(11) NOT NULL,
+  `fecha_pago` date NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `monto` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -278,6 +315,12 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password_hash`, `rol`, `fecha_
 ALTER TABLE `clientes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indices de la tabla `impresora_contadores`
+--
+ALTER TABLE `impresora_contadores`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `items_pedido`
@@ -331,6 +374,12 @@ ALTER TABLE `productos`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `proveedor_pagos`
+--
+ALTER TABLE `proveedor_pagos`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -345,13 +394,19 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de la tabla `impresora_contadores`
+--
+ALTER TABLE `impresora_contadores`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `items_pedido`
 --
 ALTER TABLE `items_pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `items_pedido_materiales`
@@ -369,13 +424,13 @@ ALTER TABLE `materiales`
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `pedidos_historial`
@@ -388,6 +443,12 @@ ALTER TABLE `pedidos_historial`
 --
 ALTER TABLE `productos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+
+--
+-- AUTO_INCREMENT de la tabla `proveedor_pagos`
+--
+ALTER TABLE `proveedor_pagos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
