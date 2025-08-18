@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -8,62 +7,66 @@ error_reporting(E_ALL);
 require_once '../config/database.php';
 require_once '../controllers/AuthController.php';
 require_once '../controllers/ClientController.php';
+require_once '../controllers/OrderController.php';
+require_once '../controllers/ReportController.php';
 
 // Creación de instancias de los controladores
 $authController = new AuthController($connection);
 $clientController = new ClientController($connection);
-
-// --- INICIO DEL ENRUTADOR CON SWITCH ---
+$orderController = new OrderController($connection);
+$reportController = new ReportController($connection);
 
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Primero, verificamos si la URL coincide con un patrón dinámico (como el de edición)
+// Verificamos patrones de URL dinámicos primero
 if (preg_match('#^clients/edit/(\d+)$#', $url, $matches)) {
-    $id = (int)$matches[1]; // Capturamos el ID
+    $clientController->update((int)$matches[1]);
+} elseif (preg_match('#^orders/show/(\d+)$#', $url, $matches)) {
+    $orderController->show((int)$matches[1]);
+} elseif (preg_match('#^orders/add_payment/(\d+)$#', $url, $matches)) {
+    $orderController->addPayment((int)$matches[1]);
+} elseif (preg_match('#^orders/edit/(\d+)$#', $url, $matches)) {
+    $id = (int)$matches[1];
     if ($method === 'POST') {
-        $clientController->update($id);
+        $orderController->update($id);
     } else {
-        $clientController->showEditForm($id);
+        $orderController->showEditForm($id);
     }
+    // --- FIN DE NUEVA REGLA ---
+
 } else {
-    // Si no es una ruta dinámica, usamos el switch para las rutas estáticas
+    // Si no, usamos el switch para las rutas estáticas
     switch ($url) {
         case 'login':
-            if ($method === 'POST') {
-                $authController->handleLogin();
-            } else {
-                $authController->showLoginForm();
-            }
+            ($method === 'POST') ? $authController->handleLogin() : $authController->showLoginForm();
             break;
-
         case 'logout':
             $authController->logout();
             break;
-
         case 'dashboard':
-        case '': // Ruta principal o vacía
-            if (isset($_SESSION['user_id'])) {
-                $authController->showDashboard();
-            } else {
-                $authController->showLoginForm();
-            }
+        case '':
+            $authController->showDashboard();
             break;
-
         case 'clients':
             $clientController->index();
             break;
-
         case 'clients/create':
-            if ($method === 'POST') {
-                $clientController->store();
-            } else {
-                $clientController->showCreateForm();
-            }
+            ($method === 'POST') ? $clientController->store() : $clientController->showCreateForm();
             break;
-
+        case 'orders':
+            $orderController->index();
+            break;
+        case 'orders/create':
+            ($method === 'POST') ? $orderController->store() : $orderController->showCreateForm();
+            break;
+        case 'clients/search':
+            $clientController->search();
+            break;
+        case 'reports':
+            $reportController->index();
+            break;
         default:
-            // Si ninguna ruta coincide, mostramos un error 404
             header("HTTP/1.0 404 Not Found");
             echo "<h1>Error 404: Página no encontrada</h1>";
             exit();

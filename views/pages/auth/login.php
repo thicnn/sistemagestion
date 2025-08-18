@@ -1,5 +1,5 @@
 <h1>Iniciar Sesión</h1>
-<form action="" method="POST">
+<form action="/sistemagestion/login" method="POST">
     <div class="form-group">
         <label for="email">Correo Electrónico:</label>
         <input type="email" id="email" name="email" required>

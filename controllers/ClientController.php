@@ -100,7 +100,7 @@ class ClientController
             header('Location: /sistemagestion/login');
             exit();
         }
-        
+
         // Ya no se necesita la comprobación del método POST aquí.
         $this->clientModel->update(
             $id,
@@ -113,5 +113,21 @@ class ClientController
         header('Location: /sistemagestion/clients');
         exit();
     }
-    }
+    /**
+     * ¡NUEVO! Maneja las peticiones de búsqueda de clientes y devuelve los resultados en JSON.
+     */
+    public function search()
+    {
+        // Solo responde si es una petición GET y si se ha enviado un término de búsqueda
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['term'])) {
+            $term = $_GET['term'];
+            $clients = $this->clientModel->searchByTerm($term);
 
+            // Le decimos al navegador que la respuesta es de tipo JSON
+            header('Content-Type: application/json');
+            // Imprimimos los resultados codificados en JSON
+            echo json_encode($clients);
+            exit();
+        }
+    }
+}

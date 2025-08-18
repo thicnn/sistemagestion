@@ -102,7 +102,16 @@ CREATE TABLE `pedidos_historial` (
   `fecha` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+CREATE TABLE `productos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `maquina_id` int(11) NOT NULL,
+  `tipo_servicio` varchar(50) NOT NULL,
+  `categoria` varchar(100) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `disponible` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -- ----- ÍNDICES Y LLAVES PRIMARIAS -----
 
 ALTER TABLE `usuarios`
