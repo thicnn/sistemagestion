@@ -7,8 +7,47 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalPedidoSpan = document.getElementById('total-pedido');
     const submitButton = document.getElementById('submit-button');
     const clientSearchInput = document.getElementById('cliente_search');
-    const clientHiddenInput = document.getElementById('cliente_id'); // Este es el input que usará la validación
+    const clientHiddenInput = document.getElementById('cliente_id');
     const searchResultsDiv = document.getElementById('search-results');
+    const addClientBtn = document.getElementById('add-client-btn');
+    const clientModal = document.getElementById('client-modal');
+    const closeModalBtn = clientModal.querySelector('.close-btn');
+    const newClientForm = document.getElementById('new-client-form');
+
+    addClientBtn.addEventListener('click', () => {
+        clientModal.style.display = 'block';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        clientModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == clientModal) {
+            clientModal.style.display = 'none';
+        }
+    });
+
+    newClientForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(newClientForm);
+        const response = await fetch('/sistemagestion/clients/create_ajax', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            clientHiddenInput.value = result.client.id;
+            clientSearchInput.value = result.client.nombre;
+            searchResultsDiv.innerHTML = '';
+            clientModal.style.display = 'none';
+            newClientForm.reset();
+            validateForm();
+        } else {
+            alert('Error al crear el cliente: ' + (result.message || 'Error desconocido'));
+        }
+    });
 
     clientSearchInput.addEventListener('keyup', async function () {
         const searchTerm = clientSearchInput.value;

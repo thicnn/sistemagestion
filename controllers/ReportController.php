@@ -31,9 +31,26 @@ class ReportController {
         $c454e_color_prod = $this->reportModel->getProductionCountForPeriod(2, 'Impresion', 'color', $primerDiaMes, $hoy) + $this->reportModel->getProductionCountForPeriod(2, 'Fotocopia', 'color', $primerDiaMes, $hoy);
         $bh227_total_prod = $this->reportModel->getProductionCountForPeriod(1, 'Impresion', 'blanco y negro', $primerDiaMes, $hoy) + $this->reportModel->getProductionCountForPeriod(1, 'Fotocopia', 'blanco y negro', $primerDiaMes, $hoy);
         
+        $totalLosses = $this->reportModel->getLossesByPeriod($fechaInicio, $fechaFin);
+
         require_once '../views/layouts/header.php';
         require_once '../views/pages/reports/index.php';
         require_once '../views/layouts/footer.php';
+    }
+
+    public function getNewClientsData() {
+        header('Content-Type: application/json');
+        $year = $_GET['year'] ?? date('Y');
+        $data = $this->reportModel->getNewClientsByYear($year);
+
+        // Formatear para el gráfico
+        $formattedData = array_fill(0, 12, 0);
+        foreach ($data as $row) {
+            $formattedData[$row['mes'] - 1] = (int)$row['cantidad'];
+        }
+
+        echo json_encode($formattedData);
+        exit();
     }
 
     public function showStatusDetails($status) {

@@ -10,7 +10,10 @@
         <div class="form-grid-main">
             <div class="form-group">
                 <label for="cliente_search">Buscar y Asociar Cliente (por Teléfono o Email):</label>
-                <input type="text" id="cliente_search" placeholder="Escribe para buscar...">
+                <div class="client-search-container">
+                    <input type="text" id="cliente_search" placeholder="Escribe para buscar...">
+                    <button type="button" id="add-client-btn" class="button-secondary">Crear Cliente</button>
+                </div>
                 <input type="hidden" name="cliente_id" id="cliente_id" class="form-validator">
                 <div id="search-results"></div>
             </div>
@@ -149,6 +152,76 @@
     #search-results .result-item:hover {
         background-color: #e9ecef;
     }
+
+    .client-search-container {
+        display: flex;
+        gap: 10px;
+    }
+    #cliente_search {
+        flex-grow: 1;
+    }
+    .button-secondary {
+        padding: 8px 12px;
+        background-color: #6c757d;
+        flex-shrink: 0;
+    }
+    .button-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .modal {
+        position: fixed;
+        z-index: 20;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        position: relative;
+    }
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
 </style>
+
+<div id="client-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h3>Crear Nuevo Cliente</h3>
+        <form id="new-client-form">
+            <div class="form-group">
+                <label for="new_client_name">Nombre</label>
+                <input type="text" id="new_client_name" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="new_client_phone">Teléfono</label>
+                <input type="text" id="new_client_phone" name="telefono">
+            </div>
+            <div class="form-group">
+                <label for="new_client_email">Email</label>
+                <input type="email" id="new_client_email" name="email">
+            </div>
+            <div class="form-group">
+                <label for="new_client_notes">Notas</label>
+                <textarea id="new_client_notes" name="notas" rows="2"></textarea>
+            </div>
+            <button type="submit" class="button">Guardar Cliente</button>
+        </form>
+    </div>
+</div>
 
 <script src="/sistemagestion/public/js/order_form.js"></script>

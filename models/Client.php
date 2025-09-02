@@ -26,7 +26,10 @@ class Client
         $email = htmlspecialchars(strip_tags($email));
         $notas = htmlspecialchars(strip_tags($notas));
         $stmt->bind_param("ssss", $nombre, $telefono, $email, $notas);
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            return $this->connection->insert_id;
+        }
+        return false;
     }
 
     public function findById($id)

@@ -101,6 +101,7 @@
             <a href="/sistemagestion/dashboard">Dashboard</a>
             <a href="/sistemagestion/clients">Clientes</a>
             <a href="/sistemagestion/orders">Pedidos</a>
+            <a href="/sistemagestion/errors">Errores</a>
             
             <?php // --- LÓGICA DE ROLES PARA ENLACES DE ADMIN ---
             if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'administrador'): ?>

@@ -78,4 +78,24 @@ class ClientController
             exit();
         }
     }
+
+    public function createAjax() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $clientId = $this->clientModel->create(
+                $_POST['nombre'],
+                $_POST['telefono'],
+                $_POST['email'],
+                $_POST['notas']
+            );
+
+            if ($clientId) {
+                $client = $this->clientModel->findById($clientId);
+                echo json_encode(['success' => true, 'client' => $client]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No se pudo crear el cliente.']);
+            }
+            exit();
+        }
+    }
 }

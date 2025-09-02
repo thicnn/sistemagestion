@@ -44,18 +44,26 @@ class Product
 
     public function searchAndFilter($filters)
     {
-        $query = "SELECT * FROM " . $this->table_name;
+        $query = "SELECT p.*, i.nombre AS impresora_nombre, COALESCE(ip.veces_pedido, 0) AS veces_pedido
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN impresoras i ON p.maquina_id = i.id
+                  LEFT JOIN (
+                      SELECT descripcion, COUNT(*) AS veces_pedido
+                      FROM items_pedido
+                      GROUP BY descripcion
+                  ) ip ON p.descripcion = ip.descripcion";
+
         $where = [];
         $params = [];
         $types = '';
 
         if (!empty($filters['search'])) {
-            $where[] = "descripcion LIKE ?";
+            $where[] = "p.descripcion LIKE ?";
             $params[] = '%' . $filters['search'] . '%';
             $types .= 's';
         }
         if (!empty($filters['tipo'])) {
-            $where[] = "tipo = ?";
+            $where[] = "p.tipo = ?";
             $params[] = $filters['tipo'];
             $types .= 's';
         }
@@ -63,7 +71,7 @@ class Product
         if (!empty($where)) {
             $query .= " WHERE " . implode(' AND ', $where);
         }
-        $query .= " ORDER BY tipo, categoria, descripcion";
+        $query .= " ORDER BY p.tipo, p.categoria, p.descripcion";
 
         $stmt = $this->connection->prepare($query);
         if (!empty($params)) {

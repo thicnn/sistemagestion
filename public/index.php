@@ -10,6 +10,7 @@ require_once '../controllers/ClientController.php';
 require_once '../controllers/OrderController.php';
 require_once '../controllers/ReportController.php';
 require_once '../controllers/AdminController.php';
+require_once '../controllers/ErrorController.php';
 
 // Creación de instancias de los controladores
 $authController = new AuthController($connection);
@@ -17,6 +18,7 @@ $clientController = new ClientController($connection);
 $orderController = new OrderController($connection);
 $reportController = new ReportController($connection);
 $adminController = new AdminController($connection);
+$errorController = new ErrorController($connection);
 
 $url = $_GET['url'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
@@ -58,12 +60,17 @@ if (preg_match('#^clients/edit/(\d+)$#', $url, $matches)) {
         
         case 'clients': $clientController->index(); break;
         case 'clients/create': ($method === 'POST') ? $clientController->store() : $clientController->showCreateForm(); break;
+        case 'clients/create_ajax': if ($method === 'POST') $clientController->createAjax(); break;
         case 'clients/search': $clientController->search(); break;
         
         case 'orders': $orderController->index(); break;
         case 'orders/create': ($method === 'POST') ? $orderController->store() : $orderController->showCreateForm(); break;
 
+        case 'errors': $errorController->index(); break;
+        case 'errors/create': ($method === 'POST') ? $errorController->store() : $errorController->create(); break;
+
         case 'reports': $reportController->index(); break;
+        case 'reports/new_clients_data': $reportController->getNewClientsData(); break;
         case 'reports/store_counter': if ($method === 'POST') $reportController->storeCounter(); break;
         case 'reports/store_payment': if ($method === 'POST') $reportController->storeProviderPayment(); break;
 

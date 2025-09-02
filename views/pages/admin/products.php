@@ -18,6 +18,8 @@
             <th>Tipo</th>
             <th>Categoría</th>
             <th>Descripción</th>
+            <th>Impresora</th>
+            <th>Veces Pedido</th>
             <th>Precio</th>
             <th>Disponibilidad</th>
             <th>Acciones</th>
@@ -35,7 +37,7 @@
     function renderTable(products) {
         productsTableBody.innerHTML = '';
         if (products.length === 0) {
-            productsTableBody.innerHTML = '<tr><td colspan="6">No se encontraron productos.</td></tr>';
+            productsTableBody.innerHTML = '<tr><td colspan="8">No se encontraron productos.</td></tr>';
             return;
         }
         products.forEach(product => {
@@ -44,6 +46,8 @@
                 <td>${product.tipo}</td>
                 <td>${product.categoria}</td>
                 <td>${product.descripcion}</td>
+                <td>${product.impresora_nombre || 'N/A'}</td>
+                <td>${product.veces_pedido}</td>
                 <td>$${product.precio}</td>
                 <td>${product.disponible == 1 ? 'Activo' : 'Inactivo'}</td>
                 <td>

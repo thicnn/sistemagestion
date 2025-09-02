@@ -144,8 +144,86 @@
         overflow-y: auto;
     }
 </style>
+<div class="report-section">
+    <h3>Nuevos Clientes por Mes</h3>
+    <div class="filter-form">
+        <label for="year-selector">Seleccionar Año:</label>
+        <select id="year-selector">
+            <?php for ($i = date('Y'); $i >= date('Y') - 5; $i--): ?>
+                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+            <?php endfor; ?>
+        </select>
+    </div>
+    <div class="chart-container">
+        <canvas id="new-clients-chart"></canvas>
+    </div>
+</div>
+
+<div class="report-section">
+    <h3>Pérdidas por Errores</h3>
+    <div class="card-grid">
+        <div class="report-card">
+            <h4>Total Perdido (Periodo Seleccionado)</h4>
+            <p class="data-number">$<?php echo number_format($totalLosses['total_perdido'] ?? 0, 2); ?></p>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.getElementById('maquina-selector').addEventListener('change', function(){
         document.getElementById('contador-color').style.display = (this.value === 'C454e') ? 'block' : 'none';
     }).dispatchEvent(new Event('change'));
+
+    const yearSelector = document.getElementById('year-selector');
+    const ctx = document.getElementById('new-clients-chart').getContext('2d');
+    let clientsChart;
+
+    const monthLabels = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    async function fetchClientsData(year) {
+        const response = await fetch(`/sistemagestion/reports/new_clients_data?year=${year}`);
+        const data = await response.json();
+        return data;
+    }
+
+    async function renderChart(year) {
+        const clientsData = await fetchClientsData(year);
+        if (clientsChart) {
+            clientsChart.destroy();
+        }
+        clientsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: 'Nuevos Clientes',
+                    data: clientsData,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    yearSelector.addEventListener('change', () => {
+        renderChart(yearSelector.value);
+    });
+
+    // Initial render
+    renderChart(yearSelector.value);
 </script>

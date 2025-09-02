@@ -32,4 +32,29 @@ class Report {
         $stmt->bind_param("i", $id);
         return $stmt->execute();
     }
+
+    public function getNewClientsByYear($year) {
+        $query = "SELECT MONTH(fecha_creacion) as mes, COUNT(id) as cantidad
+                  FROM clientes
+                  WHERE YEAR(fecha_creacion) = ?
+                  GROUP BY MONTH(fecha_creacion)
+                  ORDER BY mes ASC";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bind_param("i", $year);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    public function getLossesByPeriod($fechaInicio, $fechaFin) {
+        $fechaFinCompleta = $fechaFin . ' 23:59:59';
+        $query = "SELECT SUM(costo_total) as total_perdido
+                  FROM pedidos_errores
+                  WHERE fecha_registro BETWEEN ? AND ?";
+        $stmt = $this->connection->prepare($query);
+        $stmt->bind_param("ss", $fechaInicio, $fechaFinCompleta);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result ? $result->fetch_assoc() : ['total_perdido' => 0];
+    }
 }
